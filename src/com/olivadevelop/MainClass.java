@@ -1,3 +1,5 @@
+package com.olivadevelop;
+
 import com.olivadevelop.interfaces.ILotery;
 import com.olivadevelop.lotery.Bet;
 import com.olivadevelop.lotery.LoggerBet;
