@@ -1,11 +1,13 @@
 package com.olivadevelop.lotery;
 
 import com.olivadevelop.interfaces.ILotery;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
-import java.util.Random;
+
+import static com.olivadevelop.lotery.Utils.getRandomNumber;
 
 public final class LoteryFactory implements ILotery {
     private static ILotery ourInstance = new LoteryFactory();
@@ -17,61 +19,98 @@ public final class LoteryFactory implements ILotery {
     private LoteryFactory() {
     }
 
+    /**
+     * see {@link ILotery#newBet(boolean)}
+     */
     @Override
-    public Bet newBet() {
-        logger.info("Generando apuesta...");
+    public Bet newBet(boolean joker) {
+//        logger.info("Apuesta generada...");
         return null;
     }
 
+    /**
+     * see {@link ILotery#newBet(int, boolean)}
+     */
     @Override
-    public List<Bet> newBet(int numBets) {
+    public List<Bet> newBet(int numBets, boolean joker) {
+        logger.info("Generando apuestas...");
         List<Bet> lines = new ArrayList<>(numBets);
         for (int x = 0; x < numBets; x++) {
-            lines.add(newBet());
+            lines.add(newBet(joker));
         }
         return lines;
     }
 
+    /**
+     * see {@link ILotery#newRandomBet(boolean)}
+     */
     @Override
-    public Bet newRandomBet() {
-        logger.info("Generando apuesta...");
-        Random random = new Random();
+    public Bet newRandomBet(boolean joker) {
         List<Integer> numbers = new ArrayList<>();
         while (numbers.size() < 6) {
-            OptionalInt num = random.ints(1, 1, 50).findFirst();
+            OptionalInt num = getRandomNumber();
             if (num.isPresent() && !numbers.contains(num.getAsInt())) {
                 numbers.add(num.getAsInt());
             }
-        }
-        List<String> line = new ArrayList<>();
-        for (int num : numbers) {
-            line.add(Utils.formatNumber(num));
         }
         Bet bet = new Bet(numbers);
 
         // Generamos el complementario
         OptionalInt complement;
         do {
-            complement = random.ints(1, 1, 50).findFirst();
+            complement = getRandomNumber();
             if (complement.isPresent() && !numbers.contains(complement.getAsInt())) {
                 bet.setComplementario(complement.getAsInt());
             }
         } while (complement.isPresent() && numbers.contains(complement.getAsInt()));
 
-        // Generamos el reintegro
-        OptionalInt reinte = random.ints(1, 1, 10).findFirst();
-        if (reinte.isPresent()) {
-            bet.setReintegro(reinte.getAsInt());
+        bet.setReintegro(newRefund());
+
+        if (joker) {
+            bet.setJoker(newJoker());
         }
+//        logger.info("Apuesta generada...");
         return bet;
     }
 
+    /**
+     * see {@link ILotery#newRandomBet(int, boolean)}
+     */
     @Override
-    public List<Bet> newRandomBet(int numBets) {
+    public List<Bet> newRandomBet(int numBets, boolean joker) {
+        logger.info("Generando apuestas...");
         List<Bet> lines = new ArrayList<>(numBets);
         for (int x = 0; x < numBets; x++) {
-            lines.add(newRandomBet());
+            lines.add(newRandomBet(joker));
         }
         return lines;
+    }
+
+    /**
+     * see {@link ILotery#newJoker()}
+     */
+    @Override
+    public Integer newJoker() {
+        List<Integer> joker = new ArrayList<>(7);
+        while (joker.size() < 7) {
+            OptionalInt num = getRandomNumber(0, 9);
+            if (num.isPresent()) {
+                joker.add(num.getAsInt());
+            }
+        }
+        return Integer.valueOf(StringUtils.join(joker, ""));
+    }
+
+    /**
+     * see {@link ILotery#newRefund()}
+     */
+    @Override
+    public Integer newRefund() {
+        Integer retorno = -1;
+        OptionalInt reinte = getRandomNumber(9);
+        if (reinte.isPresent()) {
+            retorno = reinte.getAsInt();
+        }
+        return retorno;
     }
 }

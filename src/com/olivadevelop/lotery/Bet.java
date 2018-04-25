@@ -12,6 +12,7 @@ public class Bet {
     private List<String> apuesta;
     private Integer complementario;
     private Integer reintegro;
+    private Integer joker;
 
     Bet(List<Integer> apuesta) {
         setApuesta(apuesta);
@@ -47,13 +48,30 @@ public class Bet {
         this.reintegro = reintegro;
     }
 
+    public Integer getJoker() {
+        return joker;
+    }
+
+    void setJoker(Integer joker) {
+        this.joker = joker;
+    }
+
     @Override
     public String toString() {
         JSONObject retorno = new JSONObject();
         JSONObject bet = new JSONObject();
-        bet.put("apuesta", StringUtils.join(apuesta, " "));
-        bet.put("complementario", Utils.formatNumber(complementario));
-        bet.put("reintegro", reintegro);
+        if (apuesta != null) {
+            bet.put("apuesta", StringUtils.join(apuesta, " "));
+        }
+        if (complementario != null) {
+            bet.put("complementario", Utils.formatNumber(complementario));
+        }
+        if (reintegro != null) {
+            bet.put("reintegro", reintegro);
+        }
+        if (joker != null) {
+            bet.put("joker", Utils.formatNumber(joker, 7));
+        }
         retorno.put(this.getClass().getSimpleName(), bet);
         return retorno.toString();
     }
